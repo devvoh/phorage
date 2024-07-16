@@ -29,4 +29,12 @@ class InMemoryOperator implements DataOperator
     {
         $this->data[$key] = $data;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(): array
+    {
+        return array_keys($this->data);
+    }
 }

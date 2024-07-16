@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Devvoh\Phorage\Conditions;
 
-class Condition
+readonly class Condition
 {
     public function __construct(
-        public readonly string $key,
-        public readonly Comparator $comparator,
-        public readonly mixed $value = null,
+        public string $key,
+        public Comparator $comparator,
+        public mixed $value = null,
     ) {
     }
 }

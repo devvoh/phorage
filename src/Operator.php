@@ -13,6 +13,14 @@ readonly class Operator
     ) {
     }
 
+    /**
+     * @return string[]
+     */
+    public function listCategories(): array
+    {
+        return $this->dataOperator->list();
+    }
+
     public function doesCategoryExist(string $name): bool
     {
         return $this->dataOperator->read($name) !== null;

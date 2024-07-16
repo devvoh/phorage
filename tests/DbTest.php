@@ -22,6 +22,24 @@ class DbTest extends TestCase
         $this->db = new Phorage(new Operator(new InMemoryOperator([])));
     }
 
+    public function testListCategoriesReturnsEmptyArray(): void
+    {
+        self::assertSame([], $this->db->listCategories());
+    }
+
+    public function testListCategoriesReturnsArrayOfCategories(): void
+    {
+        $this->db->createCategory('test');
+        $this->db->createCategory('test2');
+
+        $categories = $this->db->listCategories();
+
+        self::assertCount(2, $categories);
+
+        self::assertSame('test', $categories[0]->name);
+        self::assertSame('test2', $categories[1]->name);
+    }
+
     public function testGetCategoryIfCategoryDoesNotExist(): void
     {
         $this->expectException(CategoryDoesNotExist::class);

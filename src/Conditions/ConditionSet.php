@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Devvoh\Phorage\Conditions;
 
-use Devvoh\Phorage\Exceptions\ComparatorNotImplemented;
-
 class ConditionSet
 {
     /** @var Condition[] */
@@ -20,7 +18,6 @@ class ConditionSet
     /**
      * @param mixed[][] $items
      * @return mixed[][]
-     * @throws ComparatorNotImplemented
      */
     public function match(array $items): array
     {
@@ -37,7 +34,6 @@ class ConditionSet
 
     /**
      * @param mixed[] $item
-     * @throws ComparatorNotImplemented
      */
     public function matchItem(array $item): bool
     {

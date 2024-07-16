@@ -25,7 +25,7 @@ readonly class PureFileOperator implements DataOperator
      */
     public function write(string $key, array $data): void
     {
-        $path = "{$this->path}/category_$key.json";
+        $path = "$this->path/category_$key.json";
 
         file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT));
     }
@@ -35,7 +35,7 @@ readonly class PureFileOperator implements DataOperator
      */
     public function read(string $key): ?array
     {
-        $path = "{$this->path}/category_$key.json";
+        $path = "$this->path/category_$key.json";
 
         if (!file_exists($path)) {
             return null;
@@ -48,6 +48,31 @@ readonly class PureFileOperator implements DataOperator
         }
 
         return json_decode($content, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function list(): array
+    {
+        $categories = [];
+
+        $globbed = glob("$this->path/category*");
+
+        if ($globbed === false) {
+            return [];
+        }
+
+        foreach ($globbed as $category) {
+            $parts = explode("/", $category);
+            $name = end($parts);
+
+            if (str_contains($name, '.json') && str_contains($name, 'category_')) {
+                $categories[] = str_replace(['category_', '.json'], '', $name);
+            }
+        }
+
+        return $categories;
     }
 
     /**

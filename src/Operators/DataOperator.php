@@ -15,4 +15,9 @@ interface DataOperator
      * @return mixed[]|null
      */
     public function read(string $key): ?array;
+
+    /**
+     * @return string[]
+     */
+    public function list(): array;
 }

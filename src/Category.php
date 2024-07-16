@@ -13,7 +13,7 @@ readonly class Category
 {
     public function __construct(
         private Operator $operator,
-        public string    $name,
+        public string $name,
     ) {
     }
 

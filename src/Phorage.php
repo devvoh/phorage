@@ -8,10 +8,10 @@ use Devvoh\Phorage\Exceptions\CategoryAlreadyExists;
 use Devvoh\Phorage\Exceptions\CategoryDoesNotExist;
 use Devvoh\Phorage\Exceptions\CategoryNameInvalid;
 
-class Phorage
+readonly class Phorage
 {
     public function __construct(
-        private readonly Operator $operator
+        private Operator $operator
     ) {
     }
 
@@ -41,6 +41,21 @@ class Phorage
         }
 
         return new Category($this->operator, $name);
+    }
+
+    /**
+     * @return Category[]
+     * @throws CategoryDoesNotExist|CategoryNameInvalid
+     */
+    public function listCategories(): array
+    {
+        $categories = [];
+
+        foreach ($this->operator->listCategories() as $categoryName) {
+            $categories[] = $this->getCategory($categoryName);
+        }
+
+        return $categories;
     }
 
     /**
