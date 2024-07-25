@@ -12,7 +12,7 @@ use Ramsey\Uuid\Uuid;
 readonly class Category
 {
     public function __construct(
-        private Operator $operator,
+        private Phorage $phorage,
         public string $name,
     ) {
     }
@@ -22,7 +22,7 @@ readonly class Category
      */
     public function list(?Filter $filter = null): array
     {
-        $items = $this->operator->loadCategoryContent($this->name);
+        $items = $this->phorage->loadCategoryContent($this->name);
 
         if ($filter) {
             $sorted = (new Sorter($items))->sortByFilter($filter);
@@ -70,7 +70,7 @@ readonly class Category
 
         $list[$data['id']] = $data;
 
-        $this->operator->saveCategoryContent($this->name, $list);
+        $this->phorage->saveCategoryContent($this->name, $list);
 
         return $data;
     }
@@ -96,7 +96,7 @@ readonly class Category
             }
         }
 
-        $this->operator->saveCategoryContent($this->name, $items);
+        $this->phorage->saveCategoryContent($this->name, $items);
 
         return $items[$id];
     }
@@ -127,7 +127,7 @@ readonly class Category
 
         unset($list[$id]);
 
-        $this->operator->saveCategoryContent($this->name, $list);
+        $this->phorage->saveCategoryContent($this->name, $list);
 
         return true;
     }

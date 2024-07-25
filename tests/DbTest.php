@@ -8,7 +8,6 @@ use Devvoh\Phorage\Category;
 use Devvoh\Phorage\Exceptions\CategoryAlreadyExists;
 use Devvoh\Phorage\Exceptions\CategoryDoesNotExist;
 use Devvoh\Phorage\Exceptions\CategoryNameInvalid;
-use Devvoh\Phorage\Operator;
 use Devvoh\Phorage\Operators\InMemoryOperator;
 use Devvoh\Phorage\Phorage;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +18,7 @@ class DbTest extends TestCase
 
     public function setUp(): void
     {
-        $this->db = new Phorage(new Operator(new InMemoryOperator([])));
+        $this->db = new Phorage(new InMemoryOperator([]));
     }
 
     public function testListCategoriesReturnsEmptyArray(): void

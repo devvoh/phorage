@@ -7,11 +7,12 @@ namespace Devvoh\Phorage;
 use Devvoh\Phorage\Exceptions\CategoryAlreadyExists;
 use Devvoh\Phorage\Exceptions\CategoryDoesNotExist;
 use Devvoh\Phorage\Exceptions\CategoryNameInvalid;
+use Devvoh\Phorage\Operators\DataOperator;
 
 readonly class Phorage
 {
     public function __construct(
-        private Operator $operator
+        private DataOperator $dataOperator
     ) {
     }
 
@@ -22,11 +23,13 @@ readonly class Phorage
     {
         $this->validateCategoryName($name);
 
-        if ($this->operator->doesCategoryExist($name)) {
+        if ($this->doesCategoryExist($name)) {
             throw CategoryAlreadyExists::create($name);
         }
 
-        return $this->operator->createCategory($name);
+        $this->dataOperator->write($name, []);
+
+        return new Category($this, $name);
     }
 
     /**
@@ -36,11 +39,11 @@ readonly class Phorage
     {
         $this->validateCategoryName($name);
 
-        if (!$this->operator->doesCategoryExist($name)) {
+        if (!$this->doesCategoryExist($name)) {
             throw CategoryDoesNotExist::create($name);
         }
 
-        return new Category($this->operator, $name);
+        return new Category($this, $name);
     }
 
     /**
@@ -51,11 +54,32 @@ readonly class Phorage
     {
         $categories = [];
 
-        foreach ($this->operator->listCategories() as $categoryName) {
+        foreach ($this->dataOperator->list() as $categoryName) {
             $categories[] = $this->getCategory($categoryName);
         }
 
         return $categories;
+    }
+
+    public function doesCategoryExist(string $name): bool
+    {
+        return $this->dataOperator->read($name) !== null;
+    }
+
+    /**
+     * @return mixed[][]
+     */
+    public function loadCategoryContent(string $name): array
+    {
+        return $this->dataOperator->read($name);
+    }
+
+    /**
+     * @param mixed[][] $data
+     */
+    public function saveCategoryContent(string $name, array $data): void
+    {
+        $this->dataOperator->write($name, $data);
     }
 
     /**

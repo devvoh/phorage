@@ -11,7 +11,6 @@ use Devvoh\Phorage\Conditions\ConditionSet;
 use Devvoh\Phorage\Exceptions\CannotGetItemFromCategory;
 use Devvoh\Phorage\Exceptions\CategoryDoesNotExist;
 use Devvoh\Phorage\Exceptions\CategoryNameInvalid;
-use Devvoh\Phorage\Operator;
 use Devvoh\Phorage\Operators\InMemoryOperator;
 use Devvoh\Phorage\Phorage;
 use Devvoh\Phorage\Filter;
@@ -24,7 +23,7 @@ class CategoryTest extends TestCase
 
     public function setUp(): void
     {
-        $this->db = new Phorage(new Operator(new InMemoryOperator([
+        $this->db = new Phorage(new InMemoryOperator([
             'users' => [
                 '01905073-67b7-73cc-9787-4c8d98ef219b' => [
                     'id' => '01905073-67b7-73cc-9787-4c8d98ef219b',
@@ -43,7 +42,7 @@ class CategoryTest extends TestCase
                     'deleted_at' => '2024-02-02 12:34:56', // fun little detail
                 ],
             ]
-        ])));
+        ]));
 
         $this->category = $this->db->getCategory('users');
     }
@@ -474,7 +473,7 @@ class CategoryTest extends TestCase
     public function testGetByConditionSetWithMultipleConditions(): void
     {
         // we need better data to really test this
-        $db = new Phorage(new Operator(new InMemoryOperator([
+        $db = new Phorage(new InMemoryOperator([
             'stuff' => [
                 'id-1' => [
                     'id' => 'id-1',
@@ -507,7 +506,7 @@ class CategoryTest extends TestCase
                     'visible' => false,
                 ],
             ],
-        ])));
+        ]));
 
         $category = $db->getCategory('stuff');
 
