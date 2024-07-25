@@ -7,6 +7,7 @@ namespace Devvoh\Phorage;
 use Devvoh\Phorage\Conditions\ConditionSet;
 use Devvoh\Phorage\Exceptions\CannotGetItemFromCategory;
 use Devvoh\Phorage\Exceptions\CannotSetIdDirectly;
+use Devvoh\Phorage\Exceptions\IdInvalidType;
 use Ramsey\Uuid\Uuid;
 
 readonly class Category
@@ -105,13 +106,18 @@ readonly class Category
      * @param mixed[] $data
      * @return mixed[]
      * @throws CannotGetItemFromCategory
+     * @throws IdInvalidType
      */
     public function updateBy(ConditionSet $conditionSet, array $data): array
     {
         $toBeUpdated = $this->listBy($conditionSet);
 
         foreach ($toBeUpdated as $item) {
-            $this->update($item['id'], $data);
+            if (is_string($item['id'])) {
+                $this->update($item['id'], $data);
+            } else {
+                throw IdInvalidType::create($item['id']);
+            }
         }
 
         return $toBeUpdated;
@@ -132,12 +138,19 @@ readonly class Category
         return true;
     }
 
+    /**
+     * @throws IdInvalidType
+     */
     public function deleteBy(ConditionSet $conditionSet): bool
     {
         $toBeDeleted = $this->listBy($conditionSet);
 
         foreach ($toBeDeleted as $item) {
-            $this->delete($item['id']);
+            if (is_string($item['id'])) {
+                $this->delete($item['id']);
+            } else {
+                throw IdInvalidType::create($item['id']);
+            }
         }
 
         return count($toBeDeleted) > 0;

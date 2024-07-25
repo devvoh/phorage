@@ -8,7 +8,7 @@ phpunit: vendor/autoload.php
 	@vendor/bin/phpunit tests
 
 phpstan:
-	@vendor/bin/phpstan analyse --level 7 src
+	@vendor/bin/phpstan analyse --level 8 src
 
 php-cs-fixer:
 	@vendor/bin/php-cs-fixer fix src -vvv --using-cache no

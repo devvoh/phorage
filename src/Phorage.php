@@ -58,7 +58,7 @@ readonly class Phorage
             $categories[] = $this->getCategory($categoryName);
         }
 
-        return $categories;
+        return array_filter($categories);
     }
 
     public function doesCategoryExist(string $name): bool
@@ -71,7 +71,7 @@ readonly class Phorage
      */
     public function loadCategoryContent(string $name): array
     {
-        return $this->dataOperator->read($name);
+        return $this->dataOperator->read($name) ?? [];
     }
 
     /**
