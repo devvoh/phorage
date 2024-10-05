@@ -11,6 +11,7 @@ use Devvoh\Phorage\Conditions\ConditionSet;
 use Devvoh\Phorage\Exceptions\CannotGetItemFromCategory;
 use Devvoh\Phorage\Exceptions\CategoryDoesNotExist;
 use Devvoh\Phorage\Exceptions\CategoryNameInvalid;
+use Devvoh\Phorage\Exceptions\ContainsMustHaveStringValues;
 use Devvoh\Phorage\Exceptions\GetByMustReturnOneItem;
 use Devvoh\Phorage\Operators\InMemoryOperator;
 use Devvoh\Phorage\Phorage;
@@ -356,6 +357,30 @@ class CategoryTest extends TestCase
         ));
 
         self::assertCount(3, $users);
+    }
+
+    public function testGetByConditionSetContainsStrictDoesNotLikeNonStrings(): void
+    {
+        $this->expectException(ContainsMustHaveStringValues::class);
+        $this->expectExceptionMessage(
+            "Comparator::contains_strict and loose can only be used on string values, was told to look for 'true' in ''user 1''"
+        );
+
+        $this->category->listBy(new ConditionSet(
+            new Condition('name', Comparator::contains_strict, true),
+        ));
+    }
+
+    public function testGetByConditionSetContainsLooseAlsoDoesNotLikeNonStringsOnItem(): void
+    {
+        $this->expectException(ContainsMustHaveStringValues::class);
+        $this->expectExceptionMessage(
+            "Comparator::contains_strict and loose can only be used on string values, was told to look for ''user'' in 'true'"
+        );
+
+        $this->category->listBy(new ConditionSet(
+            new Condition('active', Comparator::contains_loose, 'user'),
+        ));
     }
 
     public function testGetByConditionSetEquals(): void

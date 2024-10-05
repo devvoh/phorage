@@ -10,6 +10,9 @@ phpunit: vendor/autoload.php
 phpstan:
 	@vendor/bin/phpstan analyse --level 8 src
 
+phpstan-strict:
+	@vendor/bin/phpstan analyse --level max src
+
 php-cs-fixer:
 	@vendor/bin/php-cs-fixer fix src -vvv --using-cache no
 

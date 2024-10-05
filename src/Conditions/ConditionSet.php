@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Devvoh\Phorage\Conditions;
 
+use Devvoh\Phorage\Exceptions\ContainsMustHaveStringValues;
+use Devvoh\Phorage\Exceptions\ItemDoesNotContainKey;
+
 class ConditionSet
 {
     /** @var Condition[] */
@@ -41,6 +44,10 @@ class ConditionSet
         $conditionsMatched = 0;
 
         foreach ($this->conditions as $condition) {
+            if (!array_key_exists($condition->key, $item) && $condition->comparator !== Comparator::is_null) {
+                continue;
+            }
+
             $conditionsMatched += match($condition->comparator) {
                 Comparator::contains_strict => self::matchContainsStrict($item, $condition),
                 Comparator::contains_loose => self::matchContainsLoose($item, $condition),
@@ -60,20 +67,30 @@ class ConditionSet
 
     /**
      * @param mixed[] $item
+     * @throws ContainsMustHaveStringValues
      */
     private function matchContainsStrict(array $item, Condition $condition): int
     {
-        return str_contains($item[$condition->key], $condition->value) ? 1 : 0;
+        if (!is_string($item[$condition->key]) || !is_string($condition->value)) {
+            throw ContainsMustHaveStringValues::create($item[$condition->key], $condition->value);
+        }
+
+        return str_contains((string)$item[$condition->key], (string)$condition->value) ? 1 : 0;
     }
 
     /**
      * @param mixed[] $item
+     * @throws ContainsMustHaveStringValues
      */
     private function matchContainsLoose(array $item, Condition $condition): int
     {
+        if (!is_string($item[$condition->key]) || !is_string($condition->value)) {
+            throw ContainsMustHaveStringValues::create($item[$condition->key], $condition->value);
+        }
+
         return str_contains(
-            strtoupper($item[$condition->key]),
-            strtoupper($condition->value),
+            strtoupper((string)$item[$condition->key]),
+            strtoupper((string)$condition->value),
         ) ? 1 : 0;
     }
 
