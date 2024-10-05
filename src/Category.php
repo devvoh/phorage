@@ -177,6 +177,10 @@ readonly class Category
         return count($toBeDeleted) > 0;
     }
 
+    /**
+     * @param mixed[] $items
+     * @return mixed[]
+     */
     private function filterItems(array $items, Filter $filter): array
     {
         $sorted = (new Sorter($items))->sortByFilter($filter);

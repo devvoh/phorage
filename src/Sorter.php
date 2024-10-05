@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Devvoh\Phorage;
 
 use Ramsey\Uuid\Exception\InvalidUuidStringException;
+use Ramsey\Uuid\Rfc4122\Fields;
 use Ramsey\Uuid\Uuid;
 
 class Sorter
@@ -64,6 +65,11 @@ class Sorter
         return $values;
     }
 
+    /**
+     * @param string $key
+     * @param mixed[] $items
+     * @return mixed[]
+     */
     private function makeValuesSortable(string $key, array $items): array
     {
         // uuid v7 can be sorted by time, but needs to be formatted to a timestamp with microtime
@@ -72,7 +78,9 @@ class Sorter
                 try {
                     $uuid = Uuid::fromString((string)$value);
 
-                    if ($uuid->getFields()->getVersion() === 7) {
+                    $fields = $uuid->getFields();
+
+                    if ($fields instanceof Fields && $fields->getVersion() === 7) {
                         return $uuid->getDateTime()->format('U.u');
                     }
                 } catch (InvalidUuidStringException) {
