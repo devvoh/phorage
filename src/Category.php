@@ -36,9 +36,9 @@ readonly class Category
     /**
      * @return mixed[][]
      */
-    public function listBy(ConditionSet $conditionSet): array
+    public function listBy(ConditionSet $conditionSet, ?Filter $filter = null): array
     {
-        return $conditionSet->match($this->list());
+        return $conditionSet->match($this->list($filter));
     }
 
     public function count(): int

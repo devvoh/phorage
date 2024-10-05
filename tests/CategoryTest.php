@@ -466,6 +466,37 @@ class CategoryTest extends TestCase
         );
     }
 
+    public function testGetByConditionSetRespectsFilter(): void
+    {
+        $users = $this->category->listBy(
+            new ConditionSet(
+                new Condition('id', Comparator::greater_than_or_eq, '01905073-7a46-7032-a928-1c8ec913213a'),
+            ),
+            new Filter(order: ['id' => SORT_DESC]),
+        );
+
+        self::assertCount(2, $users);
+
+        $userValues = array_values($users);
+
+        self::assertSame('user 3', $userValues[0]['name']);
+        self::assertSame('user 2', $userValues[1]['name']);
+
+        $users = $this->category->listBy(
+            new ConditionSet(
+                new Condition('id', Comparator::less_than_or_eq, '01905073-7a46-7032-a928-1c8ec913213a'),
+            ),
+            new Filter(order: ['id' => SORT_ASC]),
+        );
+
+        self::assertCount(2, $users);
+
+        $userValues = array_values($users);
+
+        self::assertSame('user 2', $userValues[0]['name']);
+        self::assertSame('user 1', $userValues[1]['name']);
+    }
+
     /**
      * @throws CategoryDoesNotExist
      * @throws CategoryNameInvalid
