@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Devvoh\Phorage;
 
+use Ramsey\Uuid\Uuid;
+
 class Sorter
 {
     /**
@@ -52,12 +54,29 @@ class Sorter
         }
 
         foreach ($filter->order ?? [] as $key => $sortType) {
-            $values[] = array_column($items, $key);
+            $values[] = $this->makeValuesSortable($key, $items);
             $values[] = $sortType;
         }
 
         $values[] = SORT_NATURAL;
 
         return $values;
+    }
+
+    private function makeValuesSortable(string $key, array $items): array
+    {
+        if ($key !== 'id') {
+            return array_column($items, $key);
+        }
+
+        // uuid v7 is only time-sorted by the first 13 characters so we turn it into a timestamp (in milliseconds)
+        return array_map(
+            function (string $id) {
+                [$firstPart, $secondPart] = explode('-', $id);
+
+                return hexdec($firstPart.$secondPart);
+            },
+            array_column($items, $key),
+        );
     }
 }

@@ -493,8 +493,34 @@ class CategoryTest extends TestCase
 
         $userValues = array_values($users);
 
-        self::assertSame('user 2', $userValues[0]['name']);
-        self::assertSame('user 1', $userValues[1]['name']);
+        self::assertSame('user 1', $userValues[0]['name']);
+        self::assertSame('user 2', $userValues[1]['name']);
+    }
+
+    public function testUuidsAreProperlySorted(): void
+    {
+        $category = $this->db->createCategory('test');
+
+        $range = range(1, 50);
+
+        foreach ($range as $count) {
+            $category->create(["count" => $count]);
+            usleep(2000);
+        }
+
+        $itemsAscending = $category->list(new Filter(order: ['id' => SORT_ASC]));
+
+        foreach ($range as $count) {
+            $item = array_shift($itemsAscending); // ASC means we go up, so shift off the beginning
+            self::assertSame($count, $item['count']);
+        }
+
+        $itemsDescending = $category->list(new Filter(order: ['id' => SORT_DESC]));
+
+        foreach ($range as $count) {
+            $item = array_pop($itemsDescending); // ASC means we go up, so pop off the end
+            self::assertSame($count, $item['count']);
+        }
     }
 
     /**
