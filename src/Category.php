@@ -7,6 +7,7 @@ namespace Devvoh\Phorage;
 use Devvoh\Phorage\Conditions\ConditionSet;
 use Devvoh\Phorage\Exceptions\CannotGetItemFromCategory;
 use Devvoh\Phorage\Exceptions\CannotSetIdDirectly;
+use Devvoh\Phorage\Exceptions\GetByMustReturnOneItem;
 use Devvoh\Phorage\Exceptions\IdInvalidType;
 use Ramsey\Uuid\Uuid;
 
@@ -57,6 +58,21 @@ readonly class Category
     public function get(string $id): ?array
     {
         return $this->list()[$id] ?? null;
+    }
+
+    /**
+     * @return mixed[]
+     * @throws GetByMustReturnOneItem
+     */
+    public function getBy(ConditionSet $conditionSet): ?array
+    {
+        $items = array_values($this->listBy($conditionSet));
+
+        if (count($items) > 1) {
+            throw GetByMustReturnOneItem::create($this);
+        }
+
+        return $items[0] ?? null;
     }
 
     /**

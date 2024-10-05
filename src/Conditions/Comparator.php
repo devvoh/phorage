@@ -6,6 +6,8 @@ namespace Devvoh\Phorage\Conditions;
 
 enum Comparator
 {
+    case contains_strict;
+    case contains_loose;
     case equals;
     case not_equals;
     case is_null;

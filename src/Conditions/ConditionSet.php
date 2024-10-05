@@ -42,6 +42,8 @@ class ConditionSet
 
         foreach ($this->conditions as $condition) {
             $conditionsMatched += match($condition->comparator) {
+                Comparator::contains_strict => self::matchContainsStrict($item, $condition),
+                Comparator::contains_loose => self::matchContainsLoose($item, $condition),
                 Comparator::equals => self::matchEquals($item, $condition),
                 Comparator::not_equals => self::matchNotEquals($item, $condition),
                 Comparator::is_null => self::matchIsNull($item, $condition),
@@ -54,6 +56,25 @@ class ConditionSet
         }
 
         return $conditionsMatched === $conditionMatchesNeeded;
+    }
+
+    /**
+     * @param mixed[] $item
+     */
+    private function matchContainsStrict(array $item, Condition $condition): int
+    {
+        return str_contains($item[$condition->key], $condition->value) ? 1 : 0;
+    }
+
+    /**
+     * @param mixed[] $item
+     */
+    private function matchContainsLoose(array $item, Condition $condition): int
+    {
+        return str_contains(
+            strtoupper($item[$condition->key]),
+            strtoupper($condition->value),
+        ) ? 1 : 0;
     }
 
     /**

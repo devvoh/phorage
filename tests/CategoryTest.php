@@ -11,6 +11,7 @@ use Devvoh\Phorage\Conditions\ConditionSet;
 use Devvoh\Phorage\Exceptions\CannotGetItemFromCategory;
 use Devvoh\Phorage\Exceptions\CategoryDoesNotExist;
 use Devvoh\Phorage\Exceptions\CategoryNameInvalid;
+use Devvoh\Phorage\Exceptions\GetByMustReturnOneItem;
 use Devvoh\Phorage\Operators\InMemoryOperator;
 use Devvoh\Phorage\Phorage;
 use Devvoh\Phorage\Filter;
@@ -28,18 +29,21 @@ class CategoryTest extends TestCase
                 '01905073-67b7-73cc-9787-4c8d98ef219b' => [
                     'id' => '01905073-67b7-73cc-9787-4c8d98ef219b',
                     'name' => 'user 1',
-                    'email' => 'user1@company.ext'
+                    'email' => 'user1@company.ext',
+                    'active' => true,
                 ],
                 '01905073-7a46-7032-a928-1c8ec913213a' => [
                     'id' => '01905073-7a46-7032-a928-1c8ec913213a',
                     'name' => 'user 2',
-                    'email' => 'user2@company.ext'
+                    'email' => 'user2@company.ext',
+                    'active' => true,
                 ],
                 '01905073-7e77-7039-a7d3-f6324cf98ac9' => [
                     'id' => '01905073-7e77-7039-a7d3-f6324cf98ac9',
                     'name' => 'user 3',
                     'email' => 'user3@company.ext',
                     'deleted_at' => '2024-02-02 12:34:56', // fun little detail
+                    'active' => false,
                 ],
             ]
         ]));
@@ -200,6 +204,44 @@ class CategoryTest extends TestCase
         self::assertSame('2024-02-02 12:34:56', $user['deleted_at']);
     }
 
+    public function testGetByWithConditionsReturnsTheCorrectItem(): void
+    {
+        $user = $this->category->getBy(
+            new ConditionSet(
+                new Condition('id', Comparator::equals, '01905073-7e77-7039-a7d3-f6324cf98ac9')
+            )
+        );
+
+        self::assertSame('user 3', $user['name']);
+        self::assertSame('user3@company.ext', $user['email']);
+        self::assertSame('2024-02-02 12:34:56', $user['deleted_at']);
+    }
+
+    public function testGetByWithLooserConditionsReturnsTheCorrectItem(): void
+    {
+        $user = $this->category->getBy(
+            new ConditionSet(
+                new Condition('active', Comparator::equals, false),
+            )
+        );
+
+        self::assertSame('user 3', $user['name']);
+        self::assertSame('user3@company.ext', $user['email']);
+        self::assertSame('2024-02-02 12:34:56', $user['deleted_at']);
+        self::assertFalse($user['active']);
+    }
+
+    public function testGetByWithLooserConditionsThrowsIfNotUnique(): void
+    {
+        $this->expectException(GetByMustReturnOneItem::class);
+
+        $this->category->getBy(
+            new ConditionSet(
+                new Condition('active', Comparator::equals, true),
+            )
+        );
+    }
+
     public function testCreate(): void
     {
         $user = $this->category->create([
@@ -280,6 +322,42 @@ class CategoryTest extends TestCase
         $this->category->update('asdasd', []);
     }
 
+    public function testGetByConditionSetContainsStrict(): void
+    {
+        $users = $this->category->listBy(new ConditionSet(
+            new Condition('name', Comparator::contains_strict, 'user'),
+        ));
+
+        self::assertCount(3, $users);
+    }
+
+    public function testGetByConditionSetContainsStrictFailsOnCase(): void
+    {
+        $users = $this->category->listBy(new ConditionSet(
+            new Condition('name', Comparator::contains_strict, 'User'),
+        ));
+
+        self::assertCount(0, $users);
+    }
+
+    public function testGetByConditionSetContainsLoose(): void
+    {
+        $users = $this->category->listBy(new ConditionSet(
+            new Condition('name', Comparator::contains_loose, 'user'),
+        ));
+
+        self::assertCount(3, $users);
+    }
+
+    public function testGetByConditionSetContainsStrictDoesNotFailOnCase(): void
+    {
+        $users = $this->category->listBy(new ConditionSet(
+            new Condition('name', Comparator::contains_loose, 'User'),
+        ));
+
+        self::assertCount(3, $users);
+    }
+
     public function testGetByConditionSetEquals(): void
     {
         $users = $this->category->listBy(new ConditionSet(
@@ -292,7 +370,8 @@ class CategoryTest extends TestCase
                 '01905073-67b7-73cc-9787-4c8d98ef219b' => [
                     'id' => '01905073-67b7-73cc-9787-4c8d98ef219b',
                     'name' => 'user 1',
-                    'email' => 'user1@company.ext'
+                    'email' => 'user1@company.ext',
+                    'active' => true,
                 ],
             ],
             $users
@@ -311,13 +390,15 @@ class CategoryTest extends TestCase
                 '01905073-7a46-7032-a928-1c8ec913213a' => [
                     'id' => '01905073-7a46-7032-a928-1c8ec913213a',
                     'name' => 'user 2',
-                    'email' => 'user2@company.ext'
+                    'email' => 'user2@company.ext',
+                    'active' => true,
                 ],
                 '01905073-7e77-7039-a7d3-f6324cf98ac9' => [
                     'id' => '01905073-7e77-7039-a7d3-f6324cf98ac9',
                     'name' => 'user 3',
                     'email' => 'user3@company.ext',
                     'deleted_at' => '2024-02-02 12:34:56',
+                    'active' => false,
                 ],
             ],
             $users
@@ -336,12 +417,14 @@ class CategoryTest extends TestCase
                 '01905073-67b7-73cc-9787-4c8d98ef219b' => [
                     'id' => '01905073-67b7-73cc-9787-4c8d98ef219b',
                     'name' => 'user 1',
-                    'email' => 'user1@company.ext'
+                    'email' => 'user1@company.ext',
+                    'active' => true,
                 ],
                 '01905073-7a46-7032-a928-1c8ec913213a' => [
                     'id' => '01905073-7a46-7032-a928-1c8ec913213a',
                     'name' => 'user 2',
-                    'email' => 'user2@company.ext'
+                    'email' => 'user2@company.ext',
+                    'active' => true,
                 ],
             ],
             $users
@@ -362,6 +445,7 @@ class CategoryTest extends TestCase
                     'name' => 'user 3',
                     'email' => 'user3@company.ext',
                     'deleted_at' => '2024-02-02 12:34:56', // fun little detail
+                    'active' => false,
                 ],
             ],
             $users
@@ -380,12 +464,14 @@ class CategoryTest extends TestCase
                 '01905073-67b7-73cc-9787-4c8d98ef219b' => [
                     'id' => '01905073-67b7-73cc-9787-4c8d98ef219b',
                     'name' => 'user 1',
-                    'email' => 'user1@company.ext'
+                    'email' => 'user1@company.ext',
+                    'active' => true,
                 ],
                 '01905073-7a46-7032-a928-1c8ec913213a' => [
                     'id' => '01905073-7a46-7032-a928-1c8ec913213a',
                     'name' => 'user 2',
-                    'email' => 'user2@company.ext'
+                    'email' => 'user2@company.ext',
+                    'active' => true,
                 ],
             ],
             $users
@@ -404,12 +490,14 @@ class CategoryTest extends TestCase
                 '01905073-67b7-73cc-9787-4c8d98ef219b' => [
                     'id' => '01905073-67b7-73cc-9787-4c8d98ef219b',
                     'name' => 'user 1',
-                    'email' => 'user1@company.ext'
+                    'email' => 'user1@company.ext',
+                    'active' => true,
                 ],
                 '01905073-7a46-7032-a928-1c8ec913213a' => [
                     'id' => '01905073-7a46-7032-a928-1c8ec913213a',
                     'name' => 'user 2',
-                    'email' => 'user2@company.ext'
+                    'email' => 'user2@company.ext',
+                    'active' => true,
                 ],
             ],
             $users
@@ -428,13 +516,15 @@ class CategoryTest extends TestCase
                 '01905073-7a46-7032-a928-1c8ec913213a' => [
                     'id' => '01905073-7a46-7032-a928-1c8ec913213a',
                     'name' => 'user 2',
-                    'email' => 'user2@company.ext'
+                    'email' => 'user2@company.ext',
+                    'active' => true,
                 ],
                 '01905073-7e77-7039-a7d3-f6324cf98ac9' => [
                     'id' => '01905073-7e77-7039-a7d3-f6324cf98ac9',
                     'name' => 'user 3',
                     'email' => 'user3@company.ext',
                     'deleted_at' => '2024-02-02 12:34:56', // fun little detail
+                    'active' => false,
                 ],
             ],
             $users
@@ -453,13 +543,15 @@ class CategoryTest extends TestCase
                 '01905073-7a46-7032-a928-1c8ec913213a' => [
                     'id' => '01905073-7a46-7032-a928-1c8ec913213a',
                     'name' => 'user 2',
-                    'email' => 'user2@company.ext'
+                    'email' => 'user2@company.ext',
+                    'active' => true,
                 ],
                 '01905073-7e77-7039-a7d3-f6324cf98ac9' => [
                     'id' => '01905073-7e77-7039-a7d3-f6324cf98ac9',
                     'name' => 'user 3',
                     'email' => 'user3@company.ext',
                     'deleted_at' => '2024-02-02 12:34:56', // fun little detail
+                    'active' => false,
                 ],
             ],
             $users
@@ -647,7 +739,7 @@ class CategoryTest extends TestCase
      * @throws CategoryDoesNotExist
      * @throws CategoryNameInvalid
      */
-    public function testGetByConditionSetWithMultipleConditions(): void
+    public function testListByConditionSetWithMultipleConditions(): void
     {
         // we need better data to really test this
         $db = new Phorage(new InMemoryOperator([
