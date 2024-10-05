@@ -69,12 +69,10 @@ class Sorter
             return array_column($items, $key);
         }
 
-        // uuid v7 is only time-sorted by the first 13 characters so we turn it into a timestamp (in milliseconds)
+        // uuid v7 can be sorted by time, but needs to be formatted to a timestamp with microtime
         return array_map(
             function (string $id) {
-                [$firstPart, $secondPart] = explode('-', $id);
-
-                return hexdec($firstPart.$secondPart);
+                return Uuid::fromString($id)->getDateTime()->format('U.u');
             },
             array_column($items, $key),
         );

@@ -25,9 +25,8 @@ readonly class Category
     {
         $items = $this->phorage->loadCategoryContent($this->name);
 
-        if ($filter) {
-            $sorted = (new Sorter($items))->sortByFilter($filter);
-            $items = array_slice($sorted, $filter->offset ?? 0, $filter->limit, true);
+        if ($filter !== null) {
+            $items = $this->filterItems($items, $filter);
         }
 
         return $items;
@@ -38,7 +37,13 @@ readonly class Category
      */
     public function listBy(ConditionSet $conditionSet, ?Filter $filter = null): array
     {
-        return $conditionSet->match($this->list($filter));
+        $items = $conditionSet->match($this->list());
+
+        if ($filter !== null) {
+            $items = $this->filterItems($items, $filter);
+        }
+
+        return $items;
     }
 
     public function count(): int
@@ -154,5 +159,11 @@ readonly class Category
         }
 
         return count($toBeDeleted) > 0;
+    }
+
+    private function filterItems(array $items, Filter $filter): array
+    {
+        $sorted = (new Sorter($items))->sortByFilter($filter);
+        return array_slice($sorted, $filter->offset ?? 0, $filter->limit, true);
     }
 }

@@ -523,6 +523,126 @@ class CategoryTest extends TestCase
         }
     }
 
+    public function testUuidsAreProperlySortedAndFilteredAscending(): void
+    {
+        $category = $this->db->createCategory('test');
+
+        $range = range(1, 20);
+
+        foreach ($range as $count) {
+            $category->create(["count" => $count]);
+            usleep(2000);
+        }
+
+        $items12and13 = $category->list(
+            new Filter(
+                limit: 2,
+                offset: 11,
+                order: ['id' => SORT_ASC]
+            )
+        );
+
+        $itemValues = array_values($items12and13);
+
+        self::assertSame(12, $itemValues[0]['count']);
+        self::assertSame(13, $itemValues[1]['count']);
+    }
+
+    public function testUuidsAreProperlySortedAndFilteredDescending(): void
+    {
+        $category = $this->db->createCategory('test');
+
+        $range = range(1, 20);
+
+        foreach ($range as $count) {
+            $category->create(["count" => $count]);
+            usleep(2000);
+        }
+
+        $items9and8 = $category->list(
+            new Filter(
+                limit: 2,
+                offset: 11,
+                order: ['id' => SORT_DESC]
+            )
+        );
+
+        $itemValues = array_values($items9and8);
+
+        self::assertSame(9, $itemValues[0]['count']);
+        self::assertSame(8, $itemValues[1]['count']);
+    }
+
+    public function testUuidsAreProperlySortedWithConditionOnIdAscending(): void
+    {
+        $category = $this->db->createCategory('test');
+
+        $range = range(1, 20);
+
+        $itemId = null;
+
+        foreach ($range as $count) {
+            $itemCreated = $category->create(["count" => $count]);
+            usleep(2000);
+
+            if ($count === 13) {
+                $itemId = $itemCreated['id'];
+            }
+        }
+
+        self::assertNotNull($itemId);
+
+        $items14And15 = $category->listBy(
+            new ConditionSet(
+                new Condition('id', Comparator::greater_than, $itemId),
+            ),
+            new Filter(
+                limit: 2,
+                order: ['id' => SORT_ASC]
+            )
+        );
+
+        $itemValues = array_values($items14And15);
+
+        self::assertSame(14, $itemValues[0]['count']);
+        self::assertSame(15, $itemValues[1]['count']);
+    }
+
+    public function testUuidsAreProperlySortedWithConditionOnIdDescending(): void
+    {
+        $category = $this->db->createCategory('test');
+
+        $range = range(1, 20);
+
+        $itemId = null;
+
+        foreach ($range as $count) {
+            $itemCreated = $category->create(["count" => $count]);
+            usleep(2000);
+
+            if ($count === 13) {
+                $itemId = $itemCreated['id'];
+            }
+        }
+
+        self::assertNotNull($itemId);
+
+        $items12And11 = $category->listBy(
+            new ConditionSet(
+                new Condition('id', Comparator::less_than, $itemId),
+            ),
+            new Filter(
+                limit: 2,
+                order: ['id' => SORT_DESC]
+            )
+        );
+
+        $itemValues = array_values($items12And11);
+
+        self::assertSame(12, $itemValues[0]['count']);
+        self::assertSame(11, $itemValues[1]['count']);
+    }
+
     /**
      * @throws CategoryDoesNotExist
      * @throws CategoryNameInvalid
