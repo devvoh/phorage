@@ -52,6 +52,11 @@ readonly class Category
         return count($this->list());
     }
 
+    public function countBy(ConditionSet $conditionSet, ?Filter $filter = null): int
+    {
+        return count($this->listBy($conditionSet, $filter));
+    }
+
     /**
      * @return mixed[]
      */

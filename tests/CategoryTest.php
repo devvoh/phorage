@@ -187,6 +187,16 @@ class CategoryTest extends TestCase
         self::assertSame(3, $this->category->count());
     }
 
+    public function testCategoryCountBy(): void
+    {
+        self::assertSame(1, $this->category->countBy(new ConditionSet(
+            new Condition('active', Comparator::equals, false),
+        )));
+        self::assertSame(2, $this->category->countBy(new ConditionSet(
+            new Condition('active', Comparator::equals, true),
+        )));
+    }
+
     public function testGetByIdTwoFields(): void
     {
         $user = $this->category->get('01905073-7a46-7032-a928-1c8ec913213a');
@@ -844,6 +854,25 @@ class CategoryTest extends TestCase
             ['id-3', 'id-5'],
             array_keys($items),
         );
+    }
+
+    public function testMultipleConditionsMatchEqual(): void
+    {
+        // First by only name
+        self::assertNotNull($this->category->getBy(new ConditionSet(
+            new Condition('name', Comparator::equals, 'user 1'),
+        )));
+
+        // Then by only email
+        self::assertNotNull($this->category->getBy(new ConditionSet(
+            new Condition('email', Comparator::equals, 'user1@company.ext'),
+        )));
+
+        // Finally by both
+        self::assertNotNull($user = $this->category->getBy(new ConditionSet(
+            new Condition('name', Comparator::equals, 'user 1'),
+            new Condition('email', Comparator::equals, 'user1@company.ext'),
+        )));
     }
 
     private function itemsToValue(array $items, string $key): array
